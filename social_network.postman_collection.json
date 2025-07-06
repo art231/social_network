@@ -18,10 +18,10 @@
             "raw": "{\n    \"firstName\": \"Иван\",\n    \"lastName\": \"Иванов\",\n    \"birthDate\": \"1990-01-01\",\n    \"gender\": \"Male\",\n    \"interests\": \"Кино, Спорт\",\n    \"city\": \"Москва\",\n    \"email\": \"ivan@example.com\",\n    \"password\": \"qwerty123\"\n}"
           },
           "url": {
-            "raw": "http://localhost:5000/user/register",
+            "raw": "http://localhost:8080/user/register",
             "protocol": "http",
             "host": [ "localhost" ],
-            "port": "5000",
+            "port": "8080",
             "path": [ "user", "register" ]
           }
         },
@@ -39,10 +39,10 @@
             "raw": "{\n    \"email\": \"ivan@example.com\",\n    \"password\": \"qwerty123\"\n}"
           },
           "url": {
-            "raw": "http://localhost:5000/auth/login",
+            "raw": "http://localhost:8080/auth/login",
             "protocol": "http",
             "host": [ "localhost" ],
-            "port": "5000",
+            "port": "8080",
             "path": [ "auth", "login" ]
           }
         },
@@ -59,10 +59,10 @@
             }
           ],
           "url": {
-            "raw": "http://localhost:5000/user/get/1",
+            "raw": "http://localhost:8080/user/get/1",
             "protocol": "http",
             "host": [ "localhost" ],
-            "port": "5000",
+            "port": "8080",
             "path": [ "user", "get", "1" ]
           }
         },
