@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  api:
+    build: .
+    container_name: socialnetwork_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=socialnetwork;Username=postgres;Password=postgres
+      - Jwt__Key=mysupersecretkeymysupersecretkey1234
+    depends_on:
+      - db
+    networks:
+      - socialnet
+    restart: always
+
+  db:
+    image: postgres:16
+    container_name: socialnetwork_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: socialnetwork
+    ports:
+      - "5432:5432"
+    networks:
+      - socialnet
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./Migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  nginx:
+    image: nginx:latest
+    container_name: socialnetwork_nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - socialnet
+    restart: always
+
+networks:
+  socialnet:
+    driver: bridge
+
+volumes:
+  postgres_data:

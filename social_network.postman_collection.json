@@ -1,0 +1,80 @@
+{
+    "info": {
+      "name": "SocialNetworkAPI",
+      "_postman_id": "a1111111-b222-4ccc-8ddd-eeeeeeeeeeee",
+      "description": "Тестирование Social Network API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Регистрация пользователя",
+        "request": {
+          "method": "POST",
+          "header": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"firstName\": \"Иван\",\n    \"lastName\": \"Иванов\",\n    \"birthDate\": \"1990-01-01\",\n    \"gender\": \"Male\",\n    \"interests\": \"Кино, Спорт\",\n    \"city\": \"Москва\",\n    \"email\": \"ivan@example.com\",\n    \"password\": \"qwerty123\"\n}"
+          },
+          "url": {
+            "raw": "http://localhost:5000/user/register",
+            "protocol": "http",
+            "host": [ "localhost" ],
+            "port": "5000",
+            "path": [ "user", "register" ]
+          }
+        },
+        "response": []
+      },
+      {
+        "name": "Авторизация",
+        "request": {
+          "method": "POST",
+          "header": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"ivan@example.com\",\n    \"password\": \"qwerty123\"\n}"
+          },
+          "url": {
+            "raw": "http://localhost:5000/auth/login",
+            "protocol": "http",
+            "host": [ "localhost" ],
+            "port": "5000",
+            "path": [ "auth", "login" ]
+          }
+        },
+        "response": []
+      },
+      {
+        "name": "Получение анкеты по ID",
+        "request": {
+          "method": "GET",
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{token}}"
+            }
+          ],
+          "url": {
+            "raw": "http://localhost:5000/user/get/1",
+            "protocol": "http",
+            "host": [ "localhost" ],
+            "port": "5000",
+            "path": [ "user", "get", "1" ]
+          }
+        },
+        "response": []
+      }
+    ],
+    "event": [],
+    "variable": [
+      {
+        "key": "token",
+        "value": ""
+      }
+    ]
+  }
+  
