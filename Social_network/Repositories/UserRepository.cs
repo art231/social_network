@@ -53,5 +53,32 @@ namespace Social_network.Repositories
         ";
             return await conn.ExecuteScalarAsync<int>(sql, user);
         }
+
+        public async Task<IEnumerable<User>> SearchUsersAsync(string? firstNamePrefix, string? lastNamePrefix)
+        {
+            using var conn = new NpgsqlConnection(_connString);
+
+            var query = @"
+                SELECT id,
+                    first_name AS ""FirstName"",
+                    last_name AS ""LastName"",
+                    birth_date AS ""BirthDate"",
+                    gender,
+                    interests,
+                    city,
+                    email,
+                    password_hash AS ""PasswordHash""
+                FROM users 
+                WHERE first_name ILIKE @FirstNamePattern 
+                  AND last_name ILIKE @LastNamePattern
+                ORDER BY id
+                LIMIT 100;"; // Ограничим разумным количеством
+
+            return await conn.QueryAsync<User>(query, new
+            {
+                FirstNamePattern = firstNamePrefix + "%",
+                LastNamePattern = lastNamePrefix + "%"
+            });
+        }
     }
 }

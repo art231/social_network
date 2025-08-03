@@ -65,5 +65,10 @@ namespace Social_network.Services
                 Email = u.Email
             };
         }
+
+        public async Task<IEnumerable<User>> SearchAsync(string? firstName, string? lastName)
+        {
+            return await _repo.SearchUsersAsync(firstName, lastName);
+        }
     }
 }

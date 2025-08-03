@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Social_network.Repositories;
+using Social_network.Seed;
 using Social_network.Services;
 using System.Text;
 
@@ -78,6 +79,13 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/seed", async (IConfiguration config) =>
+{
+    var seeder = new UserSeeder(config.GetConnectionString("DefaultConnection")!);
+    await seeder.GenerateAsync(); // можно передать 100_000 для теста
+    return Results.Ok("Seed complete");
+});
 
 app.MapControllers();
 

@@ -33,5 +33,12 @@ namespace Social_network.Controllers
 
             return Ok(user);
         }
+        [Authorize]
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string? firstName, [FromQuery] string? lastName)
+        {
+            var users = await _userService.SearchAsync(firstName, lastName);
+            return Ok(users);
+        }
     }
 }
