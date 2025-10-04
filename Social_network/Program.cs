@@ -18,6 +18,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+#pragma warning disable CS8604 // Possible null reference argument.
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = false,
@@ -28,6 +29,7 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
         )
     };
+#pragma warning restore CS8604 // Possible null reference argument.
 });
 
 builder.Services.AddControllers();
@@ -37,10 +39,10 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "SocialNetwork API", Version = "v1" });
 
-    // добавляем JWT авторизацию
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ JWT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = @"JWT авторизация. Введите так: Bearer {token}",
+        Description = @"JWT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ: Bearer {token}",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
@@ -83,7 +85,7 @@ app.UseAuthorization();
 app.MapGet("/seed", async (IConfiguration config) =>
 {
     var seeder = new UserSeeder(config.GetConnectionString("DefaultConnection")!);
-    await seeder.GenerateAsync(); // можно передать 100_000 для теста
+    await seeder.GenerateAsync(); // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 100_000 пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     return Results.Ok("Seed complete");
 });
 

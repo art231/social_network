@@ -1,4 +1,4 @@
-version: '3.9'
+﻿version: '3.9'
 
 services:
   api:
@@ -43,6 +43,27 @@ services:
     networks:
       - socialnet
     restart: always
+
+  jmeter:
+    image: justb4/jmeter:5.5
+    container_name: jmeter
+    volumes:
+      - ./jmeter:/jmeter/project
+    working_dir: /jmeter/project
+    networks:
+      - socialnet
+
+  # (опц.) Для запуска GUI через VNC (если потребуется)
+  # jmeter-gui:
+  #   image: qnib/plain-jmeter
+  #   container_name: jmeter-gui
+  #   ports:
+  #     - "5901:5901"
+  #     - "6080:6080"
+  #   environment:
+  #     - VNC_RESOLUTION=1280x1024
+  #   networks:
+  #     - socialnet
 
 networks:
   socialnet:
