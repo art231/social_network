@@ -29,7 +29,7 @@ services:
       - socialnet
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./Migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./Migrations/complete_schema.sql:/docker-entrypoint-initdb.d/complete_schema.sql
 
   nginx:
     image: nginx:latest

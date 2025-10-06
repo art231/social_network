@@ -5,7 +5,7 @@ using Social_network.Services;
 namespace Social_network.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly UserService _userService;
@@ -15,14 +15,48 @@ namespace Social_network.Controllers
             _userService = userService;
         }
 
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            var result = await _userService.RegisterAsync(request);
+            if (result == null)
+                return BadRequest("Пользователь с таким email уже существует");
+
+            return Ok(result);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var token = await _userService.LoginAsync(request);
-            if (token == null)
+            var result = await _userService.LoginAsync(request);
+            if (result == null)
                 return Unauthorized("Неверные учетные данные");
 
-            return Ok(new { token });
+            return Ok(result);
+        }
+
+        [HttpPost("refresh")]
+        public IActionResult Refresh([FromBody] RefreshTokenRequest request)
+        {
+            // TODO: Implement refresh token logic
+            return Ok(new { message = "Refresh endpoint - to be implemented" });
+        }
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            // TODO: Implement logout logic (blacklist token)
+            return Ok(new { message = "Logged out successfully" });
+        }
+
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                throw new UnauthorizedAccessException("Неверный идентификатор пользователя");
+            }
+            return userId;
         }
     }
 }

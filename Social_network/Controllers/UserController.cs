@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Social_network.Models.DTOs;
 using Social_network.Services;
@@ -6,7 +6,8 @@ using Social_network.Services;
 namespace Social_network.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
@@ -16,29 +17,46 @@ namespace Social_network.Controllers
             _userService = userService;
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
         {
-            var id = await _userService.RegisterAsync(request);
-            return Ok(new { id });
-        }
-
-        [Authorize]
-        [HttpGet("get/{id}")]
-        public async Task<IActionResult> Get(int id)
-        {
-            var user = await _userService.GetUserByIdAsync(id);
+            var userId = GetCurrentUserId();
+            var user = await _userService.GetUserByIdAsync(userId);
+            
             if (user == null)
-                return NotFound();
+                return NotFound("Пользователь не найден");
 
             return Ok(user);
         }
-        [Authorize]
-        [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string? firstName, [FromQuery] string? lastName)
+
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateCurrentUser([FromBody] RegisterRequest request)
         {
-            var users = await _userService.SearchAsync(firstName, lastName);
-            return Ok(users);
+            var userId = GetCurrentUserId();
+            var user = await _userService.UpdateUserAsync(userId, request);
+            
+            if (user == null)
+                return BadRequest("Не удалось обновить данные пользователя");
+
+            return Ok(user);
+        }
+
+        [HttpGet("me/orders")]
+        public IActionResult GetUserOrders()
+        {
+            var userId = GetCurrentUserId();
+            // Здесь будет вызов OrderService для получения заказов пользователя
+            return Ok(new { message = "Метод получения заказов пользователя" });
+        }
+
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                throw new UnauthorizedAccessException("Неверный идентификатор пользователя");
+            }
+            return userId;
         }
     }
 }

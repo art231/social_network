@@ -1,32 +1,25 @@
 ﻿using Dapper;
-using Npgsql;
 using Social_network.Models.Entities;
 
 namespace Social_network.Repositories
 {
-    public class UserRepository
+    public class UserRepository : BaseRepository
     {
-        private readonly string _connString;
-
-        public UserRepository(IConfiguration config)
+        public UserRepository(IConfiguration config) 
+            : base(config.GetConnectionString("DefaultConnection")!)
         {
-            _connString = config.GetConnectionString("DefaultConnection");
         }
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            using var conn = new NpgsqlConnection(_connString);
+            using var conn = CreateConnection();
             return await conn.QueryFirstOrDefaultAsync<User>(@"
                 SELECT 
                     id,
-                    first_name AS ""FirstName"",
-                    last_name AS ""LastName"",
-                    birth_date AS ""BirthDate"",
-                    gender,
-                    interests,
-                    city,
+                    name,
                     email,
-                    password_hash AS ""PasswordHash""
+                    password_hash AS ""PasswordHash"",
+                    created_at AS ""CreatedAt""
                 FROM users
                 WHERE email = @email
             ", new { email });
@@ -34,21 +27,27 @@ namespace Social_network.Repositories
 
         public async Task<User?> GetUserByIdAsync(int id)
         {
-            using var conn = new NpgsqlConnection(_connString);
-            return await conn.QueryFirstOrDefaultAsync<User>(
-                "SELECT * FROM users WHERE id = @id",
-                new { id }
-            );
+            using var conn = CreateConnection();
+            return await conn.QueryFirstOrDefaultAsync<User>(@"
+                SELECT 
+                    id,
+                    name,
+                    email,
+                    password_hash AS ""PasswordHash"",
+                    created_at AS ""CreatedAt""
+                FROM users
+                WHERE id = @id
+            ", new { id });
         }
 
         public async Task<int> InsertUserAsync(User user)
         {
-            using var conn = new NpgsqlConnection(_connString);
+            using var conn = CreateConnection();
             var sql = @"
             INSERT INTO users
-            (first_name, last_name, birth_date, gender, interests, city, email, password_hash)
+            (name, email, password_hash, created_at)
             VALUES
-            (@FirstName, @LastName, @BirthDate, @Gender, @Interests, @City, @Email, @PasswordHash)
+            (@Name, @Email, @PasswordHash, @CreatedAt)
             RETURNING id;
         ";
             return await conn.ExecuteScalarAsync<int>(sql, user);
@@ -56,29 +55,36 @@ namespace Social_network.Repositories
 
         public async Task<IEnumerable<User>> SearchUsersAsync(string? firstNamePrefix, string? lastNamePrefix)
         {
-            using var conn = new NpgsqlConnection(_connString);
+            using var conn = CreateConnection();
 
             var query = @"
-                SELECT id,
-                    first_name AS ""FirstName"",
-                    last_name AS ""LastName"",
-                    birth_date AS ""BirthDate"",
-                    gender,
-                    interests,
-                    city,
+                SELECT 
+                    id,
+                    name,
                     email,
-                    password_hash AS ""PasswordHash""
+                    password_hash AS ""PasswordHash"",
+                    created_at AS ""CreatedAt""
                 FROM users 
-                WHERE first_name ILIKE @FirstNamePattern 
-                  AND last_name ILIKE @LastNamePattern
+                WHERE name ILIKE @NamePattern
                 ORDER BY id
-                LIMIT 100;"; // Ограничим разумным количеством
+                LIMIT 100;";
 
             return await conn.QueryAsync<User>(query, new
             {
-                FirstNamePattern = firstNamePrefix + "%",
-                LastNamePattern = lastNamePrefix + "%"
+                NamePattern = $"%{firstNamePrefix}%"
             });
+        }
+
+        public async Task<bool> UpdateUserAsync(User user)
+        {
+            using var conn = CreateConnection();
+            var sql = @"
+                UPDATE users 
+                SET name = @Name, email = @Email
+                WHERE id = @Id";
+            
+            var affectedRows = await conn.ExecuteAsync(sql, user);
+            return affectedRows > 0;
         }
     }
 }

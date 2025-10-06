@@ -19,56 +19,120 @@ namespace Social_network.Services
             _hasher = new PasswordHasher<string>();
         }
 
-        public async Task<string?> LoginAsync(LoginRequest request)
+        public async Task<AuthResponse?> LoginAsync(LoginRequest request)
         {
             var user = await _repo.GetUserByEmailAsync(request.Email);
             if (user == null) return null;
 
             var result = _hasher.VerifyHashedPassword(request.Email, user.PasswordHash, request.Password);
             if (result == PasswordVerificationResult.Success)
-                return _tokenGen.Generate(user.Id, user.Email);
+            {
+                var accessToken = _tokenGen.Generate(user.Id, user.Email);
+                var refreshToken = _tokenGen.GenerateRefreshToken();
+                
+                return new AuthResponse
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    User = new UserResponse
+                    {
+                        Id = user.Id,
+                        Name = user.Name,
+                        Email = user.Email,
+                        CreatedAt = user.CreatedAt,
+                        Roles = user.Roles.Select(r => r.Name).ToList()
+                    }
+                };
+            }
 
             return null;
         }
 
-        public async Task<int> RegisterAsync(RegisterRequest req)
+        public async Task<AuthResponse?> RegisterAsync(RegisterRequest req)
         {
+            var existingUser = await _repo.GetUserByEmailAsync(req.Email);
+            if (existingUser != null)
+                return null;
+
             var hash = _hasher.HashPassword(req.Email, req.Password);
             var user = new User
             {
-                FirstName = req.FirstName,
-                LastName = req.LastName,
-                BirthDate = req.BirthDate,
-                Gender = req.Gender,
-                Interests = req.Interests,
-                City = req.City,
+                Name = req.Name,
                 Email = req.Email,
-                PasswordHash = hash
+                PasswordHash = hash,
+                CreatedAt = DateTime.UtcNow
             };
-            return await _repo.InsertUserAsync(user);
+            
+            var userId = await _repo.InsertUserAsync(user);
+            
+            var accessToken = _tokenGen.Generate(userId, user.Email);
+            var refreshToken = _tokenGen.GenerateRefreshToken();
+            
+            return new AuthResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                User = new UserResponse
+                {
+                    Id = userId,
+                    Name = user.Name,
+                    Email = user.Email,
+                    CreatedAt = user.CreatedAt,
+                    Roles = new List<string> { "user" }
+                }
+            };
         }
 
         public async Task<UserResponse?> GetUserByIdAsync(int id)
         {
-            var u = await _repo.GetUserByIdAsync(id);
-            if (u == null) return null;
+            var user = await _repo.GetUserByIdAsync(id);
+            if (user == null) return null;
 
             return new UserResponse
             {
-                Id = u.Id,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                BirthDate = u.BirthDate,
-                Gender = u.Gender,
-                Interests = u.Interests,
-                City = u.City,
-                Email = u.Email
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                Roles = user.Roles.Select(r => r.Name).ToList()
             };
         }
 
-        public async Task<IEnumerable<User>> SearchAsync(string? firstName, string? lastName)
+        public async Task<UserResponse?> GetUserByEmailAsync(string email)
         {
-            return await _repo.SearchUsersAsync(firstName, lastName);
+            var user = await _repo.GetUserByEmailAsync(email);
+            if (user == null) return null;
+
+            return new UserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                Roles = user.Roles.Select(r => r.Name).ToList()
+            };
+        }
+
+        public async Task<UserResponse?> UpdateUserAsync(int id, RegisterRequest request)
+        {
+            var user = await _repo.GetUserByIdAsync(id);
+            if (user == null) return null;
+
+            user.Name = request.Name;
+            user.Email = request.Email;
+
+            var updated = await _repo.UpdateUserAsync(user);
+            if (!updated)
+                return null;
+
+            return new UserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                Roles = user.Roles.Select(r => r.Name).ToList()
+            };
         }
     }
 }
